@@ -1,0 +1,14 @@
+{
+  "name": "codeps",
+  "version": "0.0.0",
+  "description": "Gets all the co-dependencies for a module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Charlie Robbins <charlie.robbins@gmail.com>",
+  "license": "Apache 2",
+  "dependencies": {
+    "request": "^2.34.0"
+  }
+}
