@@ -8,7 +8,8 @@ var matrix = module.exports = function (options, callback) {
   weights(options, function (err, relate) {
     if (err) { return callback(err) }
 
-    var codeps = Object.keys(relate),
+    var codeps = Object.keys(relate).filter(function (n) { return n !== 'total' }),
+        lookup = codeps.reduce(function (a, n) { a[n] = 1; return a }, {}),
         rows   = {};
 
     async.forEachLimit(
@@ -17,7 +18,9 @@ var matrix = module.exports = function (options, callback) {
         weights({
           package:  name,
           registry: options.registry,
-          top:      options.top
+          filter:   function (val) {
+            return !!lookup[val];
+          }
         }, function (err, sub) {
           if (err) { return next(err); }
           rows[name] = sub;
@@ -26,7 +29,7 @@ var matrix = module.exports = function (options, callback) {
       },
       function (err) {
         if (err) { return callback(err); }
-        callback(null, relate, rows);
+        callback(null, rows, relate);
       }
     );
   });

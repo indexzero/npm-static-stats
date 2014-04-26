@@ -7,15 +7,17 @@ var request = require('request');
 // ####   - package
 // ####   - registry
 // ####   - top
+// ####   - filter
 //
 var weights = module.exports = function weights(options, callback) {
-  options.top = options.top || 10;
+  options.filter = options.filter || function () { return true; }
 
   weights.calculate(options, function (err, rows) {
     if (err) { return callback(err); }
 
     var relate = {},
-        total  = 0;
+        total  = 0,
+        reduced;
 
     rows.forEach(function (row) {
       var codep = row.key[1],
@@ -37,7 +39,7 @@ var weights = module.exports = function weights(options, callback) {
       }
     });
 
-    relate = Object.keys(relate)
+    reduced = Object.keys(relate)
       .sort(function (lname, rname) {
         var lcount = relate[lname].count,
             rcount = relate[rname].count;
@@ -45,18 +47,25 @@ var weights = module.exports = function weights(options, callback) {
         if (lcount === rcount) { return 0; }
         return lcount < rcount ? 1 : -1;
       })
-      .slice(0, options.top)
-      .reduce(function (all, name) {
-        total     += relate[name].count;
-        all[name] =  relate[name];
-        return all;
-      }, {});
+      .filter(options.filter);
 
-    Object.keys(relate).forEach(function (name) {
-      relate[name].relative = ((relate[name].count / total) * 100).toFixed(2);
+    if (options.top) {
+      reduced = reduced.slice(0, options.top)
+    }
+
+    reduced = reduced.reduce(function (all, name) {
+      total     += relate[name].count;
+      all[name] =  relate[name];
+      return all;
+    }, {});
+
+    Object.keys(reduced).forEach(function (name) {
+      reduced[name].relative = +(reduced[name].count / total);
     });
 
-    callback(null, relate);
+    reduced.total = total;
+    console.log(total, options.package);
+    callback(null, reduced);
   });
 };
 

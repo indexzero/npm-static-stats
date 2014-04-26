@@ -3,6 +3,7 @@
 var fs = require('fs'),
     path = require('path'),
     argv = require('optimist').argv,
+    Table = require('cli-table'),
     ddocs = require('../ddocs'),
     matrix = require('../matrix'),
     weights = require('../weights');
@@ -19,14 +20,19 @@ ddocs.seed({
 
   matrix({
     package: package,
-    registry: registry
-  }, function (err, codeps, rows) {
+    registry: registry,
+    //
+    // TODO: Parameterized this
+    //
+    top: 10
+  }, function (err, codeps, pkg) {
     if (err) {
       throw err;
     }
 
     function dump(name, relate) {
       Object.keys(relate).forEach(function (codep) {
+        if (codep === 'total') { return; }
         console.log('%s | %d %s %s', name, relate[codep].count, codep, relate[codep].relative)
       });
     }
@@ -37,57 +43,83 @@ ddocs.seed({
       });
     }
 
-    var conames = Object.keys(rows),
-        names   = [package].concat(conames).sort(),
-        matrix,
-        row;
+    var names  = Object.keys(codeps).sort().filter(function (n) { return n !== 'total' }),
+        matrix = [];
 
-  console.log(names);
-
-
-    dump(package, codeps);
-    Object.keys(rows).forEach(function (name) {
+    console.log(names);
+    dump(package, pkg);
+    names.forEach(function (name) {
       console.log();
-      dump(name, rows[name]);
+      dump(name, codeps[name]);
     });
 
     //
-    // 1. The first row is the codep count of the target
-    //    with a significant zero for the target itself.
+    // For each of the codeps in rows
+    // return an Array of values for only
+    // it's peers
     //
-    row = values(codeps);
-    row.splice(names.indexOf(package), 0, 0);
-    matrix = [row.slice()];
+    names.forEach(function (name) {
+      var row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    //
-    // 2. Now, for each of the codeps in rows
-    //    return an Array of values for only
-    //    it's peers
-    //
-    conames.forEach(function (name) {
-      row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      names.forEach(function (coname) {
+        if (name === coname) { return }
 
-      Object.keys(rows[name]).forEach(function (coname) {
         var index = names.indexOf(coname);
-        if (index !== -1) {
-          row[index] = rows[name][coname].count;
+        if (index !== -1 && codeps[name][coname])  {
+          row[index] = codeps[name][coname].count
+            * (codeps[name][coname].count / codeps[name].total)
+            * pkg[name].relative;
         }
       });
 
-      matrix.push(row.slice());
+      matrix.push(row);
     });
 
+    //
+    // TODO: Remove this debug logging.
+    //
+    var table = new Table();
+    console.dir(matrix);
+    matrix.forEach(function (row, i) {
+      for (var j = 0; j < row.length; j++) {
+        row[j] = row[j].toFixed(6);
+      }
+      row.unshift(names[i]);
+    });
+    matrix.unshift(names.slice())
+    matrix[0].unshift('');
 
-  console.dir(matrix);
+    table.push.apply(table, matrix);
+    console.log(table.toString());
+
+    // function logRatio(x, y) {
+    //   console.log(
+    //     '(%s, %s) %s/%s = %s/%s = %s',
+    //     x, y,
+    //     matrix[0][x], matrix[y][0],
+    //     matrix[x][y], matrix[y][x],
+    //     (matrix[x][y]/matrix[y][x]).toFixed(2)
+    //   );
+    // }
+
+    // for (var i = 1; i < matrix.length; i++) {
+    //   for (var j = 1; j < matrix.length; j++) {
+    //     if (i !== j) {
+    //       logRatio(i,j);
+    //       logRatio(j,i);
+    //       console.log();
+    //     }
+    //   }
+    // }
+
     //
     // ### Dump the whole JSON
     //
     fs.writeFile(
-      path.join(__dirname, 'samples', package + '.json'),
+      path.join(__dirname, '..', 'samples', package + '.json'),
       JSON.stringify({
-        name: package,
-        codeps: codeps,
-        rows: rows
+        codependencies: codeps,
+        package: pkg
       }, null, 2),
       'utf8',
       console.log

@@ -11,6 +11,7 @@
   "dependencies": {
     "request": "^2.34.0",
     "async": "^0.7.0",
-    "optimist": "^0.6.1"
+    "optimist": "^0.6.1",
+    "cli-table": "^0.3.0"
   }
 }
