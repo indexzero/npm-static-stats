@@ -75,35 +75,40 @@ ddocs.seed({
       matrix.push(row);
     });
 
+
     //
     // TODO: Remove this debug logging.
     //
-    var table = new Table();
-    console.dir(matrix);
-    matrix.forEach(function (row, i) {
+    var table = new Table(),
+        display = matrix.reduce(function (copy, row) {
+          copy.push(row.slice());
+          return copy;
+        }, []);
+    console.dir(display);
+    display.forEach(function (row, i) {
       for (var j = 0; j < row.length; j++) {
         row[j] = row[j].toFixed(6);
       }
       row.unshift(names[i]);
     });
-    matrix.unshift(names.slice())
-    matrix[0].unshift('');
+    display.unshift(names.slice())
+    display[0].unshift('');
 
-    table.push.apply(table, matrix);
+    table.push.apply(table, display);
     console.log(table.toString());
 
     // function logRatio(x, y) {
     //   console.log(
     //     '(%s, %s) %s/%s = %s/%s = %s',
     //     x, y,
-    //     matrix[0][x], matrix[y][0],
-    //     matrix[x][y], matrix[y][x],
-    //     (matrix[x][y]/matrix[y][x]).toFixed(2)
+    //     display[0][x], display[y][0],
+    //     display[x][y], display[y][x],
+    //     (display[x][y]/display[y][x]).toFixed(2)
     //   );
     // }
 
-    // for (var i = 1; i < matrix.length; i++) {
-    //   for (var j = 1; j < matrix.length; j++) {
+    // for (var i = 1; i < display.length; i++) {
+    //   for (var j = 1; j < display.length; j++) {
     //     if (i !== j) {
     //       logRatio(i,j);
     //       logRatio(j,i);
@@ -121,6 +126,16 @@ ddocs.seed({
         codependencies: codeps,
         package: pkg
       }, null, 2),
+      'utf8',
+      console.log
+    );
+
+    fs.writeFile(
+      path.join(__dirname, '..', 'samples', package + '-display.json'),
+      JSON.stringify({
+        names: names,
+        matrix: matrix
+      }),
       'utf8',
       console.log
     );
