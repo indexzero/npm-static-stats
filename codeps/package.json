@@ -9,6 +9,7 @@
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "license": "Apache 2",
   "dependencies": {
-    "request": "^2.34.0"
+    "request": "^2.34.0",
+    "async": "^0.7.0"
   }
 }
