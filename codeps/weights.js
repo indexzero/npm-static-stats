@@ -64,10 +64,10 @@ var weights = module.exports = function weights(options, callback) {
 // ### functionc calculate
 //
 weights.calculate = function calculate(options, callback) {
-  options.registry = options.registry || 'http://localhost:5984/registry2'
+  options.registry = options.registry || 'http://localhost:5984/registry'
 
   request({
-    url:   options.registry + '/_design/indexzero/_view/latestCodependencies',
+    url:   options.registry + '/_design/codependencies/_view/latest',
     json:  true,
     qs: {
       start_key:   JSON.stringify([options.package]),

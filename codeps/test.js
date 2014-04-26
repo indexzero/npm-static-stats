@@ -1,9 +1,12 @@
+var ddocs = require('./ddocs');
+
 var fs = require('fs'),
     matrix = require('./matrix'),
     weights = require('./weights');
 
 matrix({
-  package: 'winston'
+  package: 'winston',
+  registry: 'http://localhost:5984/registry2'
 }, function (err, codeps, rows) {
   if (err) {
     throw err;

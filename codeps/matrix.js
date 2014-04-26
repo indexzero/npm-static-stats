@@ -14,10 +14,11 @@ var matrix = module.exports = function (options, callback) {
     async.forEachLimit(
       codeps, 3,
       function (name, next) {
-        //
-        // TODO: Clone options and just reset the name
-        //
-        weights({ package: name }, function (err, sub) {
+        weights({
+          package:  name,
+          registry: options.registry,
+          top:      options.top
+        }, function (err, sub) {
           if (err) { return next(err); }
           rows[name] = sub;
           next();
