@@ -135,7 +135,7 @@ ddocs.seed({
       JSON.stringify({
         names: names,
         matrix: matrix
-      }),
+      }, null, 2),
       'utf8',
       console.log
     );
