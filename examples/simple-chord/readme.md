@@ -1,0 +1,3 @@
+A *chord diagram* in [D3.js](http://d3js.org/), showing dependencies between classes in a software class hierarchy. Dependencies are grouped according to the source and target packages. Although this diagram does not show class-level detail visible with [hierarchical edge bundling](http://bl.ocks.org/1044242), it better reveals the total number of imports between and within packages. Note, for example, the circular dependency between *vis.data* and *vis.events*. Colors by [ColorBrewer](http://colorbrewer2.org/).
+
+See also this approach applied to [Uber’s San Francisco cab data](http://bost.ocks.org/mike/uberdata/).
