@@ -1,10 +1,13 @@
 {
   "name": "codeps",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "subdomain": "codeps",
   "description": "Gets all the co-dependencies for a module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "predeploy": "node bin/predeploy",
+    "start": "node bin/server"
   },
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "license": "Apache 2",
@@ -12,6 +15,10 @@
     "request": "^2.34.0",
     "async": "^0.7.0",
     "optimist": "^0.6.1",
-    "cli-table": "^0.3.0"
+    "cli-table": "^0.3.0",
+    "http-server": "^0.6.1"
+  },
+  "engines": {
+    "node": "0.10.x"
   }
 }
