@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-var ddocs = require('./ddocs');
-
 var fs = require('fs'),
     path = require('path'),
     argv = require('optimist').argv,
-    matrix = require('./matrix'),
-    weights = require('./weights');
+    ddocs = require('../ddocs'),
+    matrix = require('../matrix'),
+    weights = require('../weights');
 
 var registry = argv.r || 'http://localhost:5984/registry',
     package  = argv.p || 'winston'
