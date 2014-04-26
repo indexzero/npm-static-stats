@@ -65,8 +65,6 @@ d3.json("readme.json", function(error, imports) {
     d.imports.forEach(function(d) { row[indexByName.get(name(d))]++; });
   });
 
-  console.dir(matrix);
-
   chord.matrix(matrix);
 
   var g = svg.selectAll(".group")
