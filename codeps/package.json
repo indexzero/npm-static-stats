@@ -10,6 +10,7 @@
   "license": "Apache 2",
   "dependencies": {
     "request": "^2.34.0",
-    "async": "^0.7.0"
+    "async": "^0.7.0",
+    "optimist": "^0.6.1"
   }
 }

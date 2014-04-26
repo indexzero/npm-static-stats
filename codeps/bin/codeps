@@ -1,0 +1,102 @@
+#!/usr/bin/env node
+
+var ddocs = require('./ddocs');
+
+var fs = require('fs'),
+    path = require('path'),
+    argv = require('optimist').argv,
+    matrix = require('./matrix'),
+    weights = require('./weights');
+
+var registry = argv.r || 'http://localhost:5984/registry',
+    package  = argv.p || 'winston'
+
+ddocs.seed({
+  registry: registry
+}, function (err) {
+  if (err) {
+    throw err;
+  }
+
+  matrix({
+    package: package,
+    registry: registry
+  }, function (err, codeps, rows) {
+    if (err) {
+      throw err;
+    }
+
+    function dump(name, relate) {
+      Object.keys(relate).forEach(function (codep) {
+        console.log('%s | %d %s %s', name, relate[codep].count, codep, relate[codep].relative)
+      });
+    }
+
+    function values (relate) {
+      return Object.keys(relate).map(function (name) {
+        return relate[name].count;
+      });
+    }
+
+    var conames = Object.keys(rows),
+        names   = [package].concat(conames).sort(),
+        matrix,
+        row;
+
+  console.log(names);
+
+
+    dump(package, codeps);
+    Object.keys(rows).forEach(function (name) {
+      console.log();
+      dump(name, rows[name]);
+    });
+
+    //
+    // 1. The first row is the codep count of the target
+    //    with a significant zero for the target itself.
+    //
+    row = values(codeps);
+    row.splice(names.indexOf(package), 0, 0);
+    matrix = [row.slice()];
+
+    //
+    // 2. Now, for each of the codeps in rows
+    //    return an Array of values for only
+    //    it's peers
+    //
+    conames.forEach(function (name) {
+      row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      Object.keys(rows[name]).forEach(function (coname) {
+        var index = names.indexOf(coname);
+        if (index !== -1) {
+          row[index] = rows[name][coname].count;
+        }
+      });
+
+      matrix.push(row.slice());
+    });
+
+
+  console.dir(matrix);
+    //
+    // ### Dump the whole JSON
+    //
+    fs.writeFile(
+      path.join(__dirname, 'samples', package + '.json'),
+      JSON.stringify({
+        name: package,
+        codeps: codeps,
+        rows: rows
+      }, null, 2),
+      'utf8',
+      console.log
+    );
+
+    //
+    // But also dump the matrix
+    //
+
+  });
+});
