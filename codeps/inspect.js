@@ -41,6 +41,9 @@ inspect.codependencies = inspect.codeps = function (context) {
     });
   }
 
+  names.map(function (n) { console.log(n) });
+  console.log();
+
   //
   // Display the information for the lattice and the
   // sublattices (i.e. co-*dependencies).
