@@ -1,6 +1,6 @@
 {
   "name": "codeps",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "subdomain": "codeps",
   "description": "Gets all the co-dependencies for a module",
   "main": "index.js",
