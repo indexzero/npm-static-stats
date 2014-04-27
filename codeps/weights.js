@@ -1,13 +1,24 @@
+/*
+ * weights.js: Calculates a single weight-set for a co-depencency matrix.
+ *
+ * (C) 2014 Charlie Robbins
+ *
+ */
 
 var request = require('request');
 
 //
 // ### function weights (options, callback)
 // #### @options {Object}
-// ####   - package
-// ####   - registry
-// ####   - top
-// ####   - filter
+// ####   - package  {string}   Package to calculate weights for
+// ####   - registry {string}   Registry to calculate against
+// ####   - top      {number}   **Optional** If set, returns only the top N codeps
+// ####   - filter   {function} **Optional** If set, returns only those matching the `filter`.
+// ####   - view     {string}   **Optional** View to calculate weights against.
+//
+// Calculates the weights for the specified `package` against the `view` in the
+// `registry` provided. These weights represent a measure of their codependency
+// relationship with the `package`.
 //
 var weights = module.exports = function weights(options, callback) {
   options.filter = options.filter || function () { return true; }
@@ -64,19 +75,23 @@ var weights = module.exports = function weights(options, callback) {
     });
 
     reduced.total = total;
-    console.log(total, options.package);
     callback(null, reduced);
   });
 };
 
 //
-// ### functionc calculate
+// ### function weights (options, callback)
+// #### @options {Object}
+// ####   - package  {string}   Package to calculate weights for
+// ####   - registry {string}   Registry to calculate against
+// ####   - view     {string}   **Optional** View to calculate weights against.
 //
 weights.calculate = function calculate(options, callback) {
   options.registry = options.registry || 'http://localhost:5984/registry'
+  options.view     = options.view     || 'latest';
 
   request({
-    url:   options.registry + '/_design/codependencies/_view/latest',
+    url:   options.registry + '/_design/codependencies/_view/' + options.view,
     json:  true,
     qs: {
       start_key:   JSON.stringify([options.package]),
