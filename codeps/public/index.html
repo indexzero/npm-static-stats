@@ -60,7 +60,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
       .each(function(d) {
         d.angle = (d.startAngle + d.endAngle) / 2;
       })
-      .attr("dy", ".5em")
+      .attr("dy", ".15em")
       .attr("transform", function(d) {
         return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
             + "translate(" + (innerRadius + 26) + ")"
@@ -91,6 +91,7 @@ function fade(opacity, svg) {
           return d.source.index != i && d.target.index != i;
         })
       .transition()
+        .duration(150)
         .style("opacity", opacity);
   };
 }
