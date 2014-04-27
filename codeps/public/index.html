@@ -6,7 +6,7 @@
 <script>
 
 // TODO: dynamically size?
-var packageParts = /\?p=([\w]+)$/.exec(window.location),
+var packageParts = /\?p=([\w\.\-\_]+)$/.exec(window.location),
     packageName  = (packageParts && packageParts[1]) || 'winston'
     outerRadius  = 800 / 2,
     innerRadius  = outerRadius - 100;
@@ -24,10 +24,19 @@ var arc = d3.svg.arc()
 
 var svg = d3.select("body")
   .append("svg")
-    .attr("width", outerRadius * 2)
-    .attr("height", outerRadius * 2)
-  .append("g")
-    .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
+    .attr("width", outerRadius * 4)
+    .attr("height", outerRadius * 2);
+
+svg.append("text")
+  .attr('transform', 'translate(20,60)')
+  .attr("font-size", "60px")
+  .attr("text-decoration", "underline")
+  .attr('fill', d3.rgb('#333'))
+  .text(packageName);
+
+var graph = svg.append("g")
+  .attr("transform", "translate(" + outerRadius*1.25 + "," + outerRadius + ")");
+
 
 d3.json("samples/" + packageName + '-display.json', function(error, display) {
   var names  = display.names,
@@ -39,7 +48,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
   );
 
   /* fill arcs */
-  var arcs = svg.append("g")
+  var arcs = graph.append("g")
       .attr("class", "arcs")
     .selectAll("path")
       .data(chord.groups)
@@ -51,7 +60,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
       .on("mouseout", fade(1, svg));
 
   /* add module label */
-  var labels = svg.append("g")
+  var labels = graph.append("g")
       .attr("class", "labels")
     .selectAll("g")
       .data(chord.groups)
@@ -69,7 +78,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
       .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
       .text(function(d) { return names[d.index]; });
 
-  var chords = svg.append("g")
+  var chords = graph.append("g")
       .attr("class", "chords")
     .selectAll("path")
       .data(chord.chords)
@@ -86,10 +95,10 @@ d3.select(self.frameElement).style("height", outerRadius * 2 + "px");
 /** Returns an event handler for fading a given chord group. */
 function fade(opacity, svg) {
   return function(g, i) {
-    svg.selectAll("g.chords path")
-        .filter(function(d) {
-          return d.source.index != i && d.target.index != i;
-        })
+    graph.selectAll("g.chords path")
+      .filter(function(d) {
+        return d.source.index != i && d.target.index != i;
+      })
       .transition()
         .duration(150)
         .style("opacity", opacity);
