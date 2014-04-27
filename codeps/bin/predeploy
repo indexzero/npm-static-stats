@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-SCRIPT_PATH=${0%/*}
-PUBLIC_DIR="$SCRIPT_PATH/../public"
-SAMPLES_DIR="$SCRIPT_PATH/../samples"
-echo "Copying samples to public"
-mkdir -p "$PUBLIC_DIR/samples"
-cp $SAMPLES_DIR/*-display.json "$PUBLIC_DIR/samples/"
