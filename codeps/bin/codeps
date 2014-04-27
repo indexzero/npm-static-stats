@@ -3,8 +3,8 @@
 var fs = require('fs'),
     path = require('path'),
     argv = require('optimist').argv,
-    Table = require('cli-table'),
     ddocs = require('../ddocs'),
+    inspect = require('../inspect'),
     matrix = require('../matrix'),
     weights = require('../weights');
 
@@ -30,13 +30,6 @@ ddocs.seed({
       throw err;
     }
 
-    function dump(name, relate) {
-      Object.keys(relate).forEach(function (codep) {
-        if (codep === 'total') { return; }
-        console.log('%s | %d %s %s', name, relate[codep].count, codep, relate[codep].relative)
-      });
-    }
-
     function values (relate) {
       return Object.keys(relate).map(function (name) {
         return relate[name].count;
@@ -45,13 +38,6 @@ ddocs.seed({
 
     var names  = Object.keys(codeps).sort().filter(function (n) { return n !== 'total' }),
         matrix = [];
-
-    console.log(names);
-    dump(package, pkg);
-    names.forEach(function (name) {
-      console.log();
-      dump(name, codeps[name]);
-    });
 
     //
     // For each of the codeps in rows
@@ -65,7 +51,7 @@ ddocs.seed({
         if (name === coname) { return }
 
         var index = names.indexOf(coname);
-        if (index !== -1 && codeps[name][coname])  {
+        if (index !== -1 && codeps[name][coname]) {
           row[index] = codeps[name][coname].count
             * (codeps[name][coname].count / codeps[name].total)
             * pkg[name].relative;
@@ -76,46 +62,14 @@ ddocs.seed({
     });
 
 
-    //
-    // TODO: Remove this debug logging.
-    //
-    var table = new Table(),
-        display = matrix.reduce(function (copy, row) {
-          copy.push(row.slice());
-          return copy;
-        }, []);
-    console.dir(display);
-    display.forEach(function (row, i) {
-      for (var j = 0; j < row.length; j++) {
-        row[j] = row[j].toFixed(6);
-      }
-      row.unshift(names[i]);
+    inspect.codeps({
+      name: package,
+      lattice: pkg,
+      names: names,
+      codeps: codeps,
+      matrix: matrix
     });
-    display.unshift(names.slice())
-    display[0].unshift('');
 
-    table.push.apply(table, display);
-    console.log(table.toString());
-
-    // function logRatio(x, y) {
-    //   console.log(
-    //     '(%s, %s) %s/%s = %s/%s = %s',
-    //     x, y,
-    //     display[0][x], display[y][0],
-    //     display[x][y], display[y][x],
-    //     (display[x][y]/display[y][x]).toFixed(2)
-    //   );
-    // }
-
-    // for (var i = 1; i < display.length; i++) {
-    //   for (var j = 1; j < display.length; j++) {
-    //     if (i !== j) {
-    //       logRatio(i,j);
-    //       logRatio(j,i);
-    //       console.log();
-    //     }
-    //   }
-    // }
 
     //
     // ### Dump the whole JSON
@@ -139,10 +93,5 @@ ddocs.seed({
       'utf8',
       console.log
     );
-
-    //
-    // But also dump the matrix
-    //
-
   });
 });
