@@ -26,7 +26,7 @@ ddocs.seed = function (options, callback) {
     }
 
     var names = body.rows.reduce(function (all, row) {
-      all[row.id.split('/')[1]] = true;
+      all[row.id.split('/')[1]] = row.doc;
       return all;
     }, {});
 
@@ -40,16 +40,28 @@ ddocs.seed = function (options, callback) {
           //
           return next();
         }
-        else if (names[name]) {
-          //
-          // Of if the design doc already exists, skip it.
-          // Don't overwrite it
-          //
-          return next();
+
+        var uri    = options.registry + '/_design/' + name,
+            lviews = Object.keys(ddocs[name].views),
+            rviews = Object.keys(names[name].views),
+            diff   = lviews.some(function (vname) {
+              return rviews.indexOf(vname) === -1;
+            });
+
+        if (names[name]) {
+          if (!diff) {
+            //
+            // Of if the design doc already exists, skip it.
+            // Don't overwrite it
+            //
+            return next();
+          }
+
+          ddocs[name]._rev = names[name]._rev;
         }
 
         request({
-          uri:    options.registry + '/_design/' + name,
+          uri:    uri,
           json:   ddocs[name],
           method: 'PUT'
         }, function (err, res) {
@@ -73,34 +85,42 @@ ddocs.codependencies = {
   views: {
     latest: {
       reduce: '_sum',
-      map: couchFunc(function (doc) {
-        if (doc._id.match(/^npm-test-.+$/) &&
-            doc.maintainers &&
-            doc.maintainers[0].name === 'isaacs') {
-          return;
-        }
-
-        var l = doc['dist-tags'] && doc['dist-tags'].latest
-        if (!l) return
-        l = doc.versions && doc.versions[l]
-        if (!l) return
-
-        var d = l.dependencies
-        if (!d) return
-
-        for (var dep in d) {
-          dep = dep.trim();
-          for (var codep in d) {
-            codep = codep.trim();
-            if (dep !== codep) {
-              emit([dep, codep, doc._id], 1)
-            }
-          }
-        }
-      })
+      map: codependencyByType('dependencies')
+    },
+    latestDev: {
+      reduce: '_sum',
+      map: codependencyByType('devDependencies')
     }
   }
 };
+
+function codependencyByType (type) {
+  return couchFunc(function (doc) {
+    if (doc._id.match(/^npm-test-.+$/) &&
+        doc.maintainers &&
+        doc.maintainers[0].name === 'isaacs') {
+      return;
+    }
+
+    var l = doc['dist-tags'] && doc['dist-tags'].latest
+    if (!l) return
+    l = doc.versions && doc.versions[l]
+    if (!l) return
+
+    var d = l[$codependency];
+    if (!d) return
+
+    for (var dep in d) {
+      dep = dep.trim();
+      for (var codep in d) {
+        codep = codep.trim();
+        if (dep !== codep) {
+          emit([dep, codep, doc._id], 1)
+        }
+      }
+    }
+  }).replace('$codependency', "'" + type + "'");
+}
 
 function couchFunc(func) {
   // Convert a named function anonymous function source.
