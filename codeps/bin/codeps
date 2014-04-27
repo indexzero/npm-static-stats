@@ -3,38 +3,40 @@
 var fs = require('fs'),
     path = require('path'),
     argv = require('optimist').argv,
+    async = require('async'),
     ddocs = require('../ddocs'),
     inspect = require('../inspect'),
     matrix = require('../matrix'),
     weights = require('../weights');
 
 var registry = argv.r || 'http://localhost:5984/registry',
-    package  = argv.p || 'winston'
+    package  = argv.p || 'winston',
+    view     = argv.v || 'dependencies',
+    top      = argv.t || 10;
 
-ddocs.seed({
-  registry: registry
-}, function (err) {
-  if (err) {
-    throw err;
-  }
+console.log('start   | co-*dependencies');
+console.log('seed    | %s', registry);
+ddocs.seed(registry, function (err) {
+  if (err) { throw err; }
+
+  //
+  // Dump the options being used.
+  //
+  console.log([
+    'options | ',
+    '  registry: %s',
+    '  package:  %s',
+    '  view:     %s',
+    '  top:      %s',
+    '----------------------------'
+  ].join('\n'), registry, package, view, top);
 
   matrix({
-    package: package,
+    package:  package,
     registry: registry,
-    //
-    // TODO: Parameterized this
-    //
-    top: 10
+    top:      top
   }, function (err, codeps, pkg) {
-    if (err) {
-      throw err;
-    }
-
-    function values (relate) {
-      return Object.keys(relate).map(function (name) {
-        return relate[name].count;
-      });
-    }
+    if (err) { throw err; }
 
     var names  = Object.keys(codeps).sort().filter(function (n) { return n !== 'total' }),
         matrix = [];
@@ -45,7 +47,8 @@ ddocs.seed({
     // it's peers
     //
     names.forEach(function (name) {
-      var row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      var row = Array.apply(null, new Array(15))
+        .map(Number.prototype.valueOf, 0);
 
       names.forEach(function (coname) {
         if (name === coname) { return }
@@ -55,43 +58,76 @@ ddocs.seed({
           row[index] = codeps[name][coname].count
             * (codeps[name][coname].count / codeps[name].total)
             * pkg[name].relative;
+
+          //
+          // TODO: Make this logging configurable with more
+          // granularity than just DEBUG=true
+          // console.log(index, row[index], name, coname);
+          //
         }
       });
 
       matrix.push(row);
     });
 
-
-    inspect.codeps({
-      name: package,
-      lattice: pkg,
-      names: names,
-      codeps: codeps,
-      matrix: matrix
-    });
-
-
-    //
-    // ### Dump the whole JSON
-    //
-    fs.writeFile(
-      path.join(__dirname, '..', 'samples', package + '.json'),
-      JSON.stringify({
-        codependencies: codeps,
-        package: pkg
-      }, null, 2),
-      'utf8',
-      console.log
-    );
-
-    fs.writeFile(
-      path.join(__dirname, '..', 'samples', package + '-display.json'),
-      JSON.stringify({
+    if (process.env.DEBUG) {
+      inspect.codeps({
+        name: package,
+        lattice: pkg,
         names: names,
+        codeps: codeps,
         matrix: matrix
-      }, null, 2),
-      'utf8',
-      console.log
-    );
+      });
+    }
+
+    //
+    // Dump two kinds of JSON for now
+    // - all:     All relevant data (very large).
+    // - display: Exactly the data to send to the browser.
+    //
+    var output = {
+      all: {
+        files: [
+          path.join(__dirname, '..', 'samples', package + '.json'),
+          path.join(__dirname, '..', 'public', 'samples', package + '.json')
+        ],
+        data: JSON.stringify({
+          codependencies: codeps,
+          package: pkg
+        }, null, 2)
+      },
+      display: {
+        files: [
+          path.join(__dirname, '..', 'samples', package + '-display.json'),
+          path.join(__dirname, '..', 'public', 'samples', package + '-display.json'),
+        ],
+        data: JSON.stringify({
+          names: names,
+          matrix: matrix
+        }, null, 2)
+      }
+    };
+
+    //
+    // ### writeFiles (type, callback)
+    // Writes all files of the specified type
+    //
+    function writeFiles(type, callback) {
+      async.forEach(output[type].files, function (file, next) {
+        console.log('Write %s', file);
+        fs.writeFile(file, output[type].data, 'utf-8', next);
+      }, callback);
+    }
+
+    async.parallel([
+      async.apply(writeFiles, 'all'),
+      async.apply(writeFiles, 'display')
+    ], function (err) {
+      if (err) {
+        throw err;
+      }
+
+      console.log('%s co-*dependencies | ok', package);
+    })
   });
 });

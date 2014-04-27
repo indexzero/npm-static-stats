@@ -18,11 +18,11 @@ var ddocs = module.exports = {};
 // TODO: Use something like this
 // https://github.com/mmalecki/couchdb-seed-design
 //
-ddocs.seed = function (options, callback) {
-  options.registry = options.registry || 'http://localhost:5984/registry'
+ddocs.seed = function (registry, callback) {
+  registry = registry || 'http://localhost:5984/registry'
 
   request({
-    uri: options.registry + '/_all_docs',
+    uri: registry + '/_all_docs',
     qs: {
       startkey:    JSON.stringify('_design/'),
       endkey:      JSON.stringify('_design0'),
@@ -50,7 +50,7 @@ ddocs.seed = function (options, callback) {
           return next();
         }
 
-        var uri    = options.registry + '/_design/' + name,
+        var uri    = registry + '/_design/' + name,
             lviews = Object.keys(ddocs[name].views),
             rviews = Object.keys(names[name].views),
             diff   = lviews.some(function (vname) {

@@ -54,14 +54,26 @@ inspect.codependencies = inspect.codeps = function (context) {
   // 2. Add the row headers.
   // 3. Add the column headers.
   //
+  // TODO: Make precision configurable.
+  // TODO: Make dumping the raw matrix configurable
+  // console.dir(matrix);
+  //
   display.forEach(function (row, i) {
     for (var j = 0; j < row.length; j++) {
-      row[j] = row[j].toFixed(6);
+      row[j] = typeof row[j] === 'number'
+        ? row[j].toFixed(4)
+        : '';
     }
-    row.unshift(names[i]);
+
+    row.unshift(names[i].slice(0, 4) + '…');
   });
 
-  display.unshift(names.slice())
+  display.unshift(
+    names.slice().map(function (name) {
+      return name.slice(0, 4) + '…';
+    })
+  );
+
   display[0].unshift('');
   table.push.apply(table, display);
   console.log(table.toString());
