@@ -1,3 +1,9 @@
+/*
+ * ddocs.js: Design documents and seed logic
+ *
+ * (C) 2014 Charlie Robbins
+ *
+ */
 
 var async = require('async'),
     request = require('request');
@@ -8,6 +14,9 @@ var ddocs = module.exports = {};
 // ### function seed (options, callback)
 // Seeds the target registry database with all of the
 // design documents needed unless they already exist
+//
+// TODO: Use something like this
+// https://github.com/mmalecki/couchdb-seed-design
 //
 ddocs.seed = function (options, callback) {
   options.registry = options.registry || 'http://localhost:5984/registry'
@@ -94,6 +103,16 @@ ddocs.codependencies = {
   }
 };
 
+//
+// ### @private function codependencyByType (type)
+// Returns a stringified CouchDB view function which
+// emits the keys for a co-dependency relationship
+// of the specified type:
+//   - dependencies
+//   - devDependencies
+//   - peerDependencies
+//   - optionalDependencies
+//
 function codependencyByType (type) {
   return couchFunc(function (doc) {
     if (doc._id.match(/^npm-test-.+$/) &&
@@ -122,8 +141,11 @@ function codependencyByType (type) {
   }).replace('$codependency', "'" + type + "'");
 }
 
+//
+// ### @private couchFunc (func)
+// Convert a named function anonymous function source.
+//
 function couchFunc(func) {
-  // Convert a named function anonymous function source.
   func = '' + func;
   func = func.replace(/^function\s*[^(]*/, 'function');
   return func;
