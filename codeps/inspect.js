@@ -9,6 +9,18 @@ var Table = require('cli-table');
 
 var inspect = module.exports;
 
+//
+// ### function codependencies (context)
+// #### context {Object} co-*dependencies context to inspect
+// ####   - name    {string} Name of the "package domain"
+// ####   - lattice {Object} Lattice representing the "package domain", D
+// ####   - names   {Array}  Names of co-*dependencies in D
+// ####   - codeps  {string} Sublattices for each of the co-*dependencies in D
+// ####   - matrix  {Array*} Weighted matrix representing a summary of D.
+//
+// Inspects the context of the co-*dependencies "package domain" D for
+// a given package, options.name.
+//
 inspect.codependencies = inspect.codeps = function (context) {
   var table   = new Table(),
       name    = context.name,
