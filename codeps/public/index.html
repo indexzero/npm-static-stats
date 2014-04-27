@@ -14,7 +14,7 @@ var packageParts = /\?p=([\w]+)$/.exec(window.location),
 var fill = d3.scale.category20c();
 
 var chord = d3.layout.chord()
-    .padding(.04)
+    .padding(.08)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
 
@@ -40,6 +40,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
 
   /* fill arcs */
   var arcs = svg.append("g")
+      .attr("class", "arcs")
     .selectAll("path")
       .data(chord.groups)
     .enter().append("path")
@@ -50,7 +51,8 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
       .on("mouseout", fade(1, svg));
 
   /* add module label */
-  var text = svg.append("g")
+  var labels = svg.append("g")
+      .attr("class", "labels")
     .selectAll("g")
       .data(chord.groups)
     .enter().append("g")
@@ -68,7 +70,7 @@ d3.json("samples/" + packageName + '-display.json', function(error, display) {
       .text(function(d) { return names[d.index]; });
 
   var chords = svg.append("g")
-      .attr("class", "chord")
+      .attr("class", "chords")
     .selectAll("path")
       .data(chord.chords)
     .enter().append("path")
@@ -84,8 +86,7 @@ d3.select(self.frameElement).style("height", outerRadius * 2 + "px");
 /** Returns an event handler for fading a given chord group. */
 function fade(opacity, svg) {
   return function(g, i) {
-    console.log("FADING");
-    svg.selectAll("g.chord path")
+    svg.selectAll("g.chords path")
         .filter(function(d) {
           return d.source.index != i && d.target.index != i;
         })
