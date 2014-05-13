@@ -1,0 +1,21 @@
+{
+  "name": "comp-stat",
+  "version": "0.0.0",
+  "description": "Comprehensive static analysis for dependent modules",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "dependencies": {
+    "npm-pipeline": "*",
+    "async": "^0.8.0",
+    "request": "^2.34.0",
+    "optimist": "^0.6.1"
+  },
+  "keywords": [
+    "npm",
+    "static-analysis"
+  ],
+  "author": "Charlie Robbins <charlie.robbins@gmail.com>",
+  "license": "Apache 2"
+}

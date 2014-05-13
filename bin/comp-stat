@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+var argv = require('optimist').argv,
+    compStat = require('../index');
+
+if (argv.h || argv.help) {
+  console.log('usage: comp-stat -r [registry] -p [package]');
+}
+
+compStat({
+  package: argv.p,
+  registry: argv.r,
+}, function (err, res) {
+  console.dir(err);
+  if (err) {
+    console.dir(err.stack.split('\n'));
+  }
+  console.dir(res);
+})
