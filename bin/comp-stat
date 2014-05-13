@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs'),
+    path = require('path'),
     argv = require('optimist').argv,
     compStat = require('../index');
 
@@ -21,6 +22,11 @@ compStat.summary({
     return process.exit(1);
   }
 
-  fs.writeFileSync(argv.p + '.json', JSON.stringify(res, null, 2), 'utf8');
+  fs.writeFileSync(
+    path.join(__dirname, '..', '..', 'www', 'public', 'json', 'comp-stat', argv.p + '.json'),
+    JSON.stringify(res, null, 2),
+    'utf8'
+  );
+
   console.dir(res);
 })
