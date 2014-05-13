@@ -20,12 +20,35 @@ var async = require('async'),
 // Does the core parts of the compStat calculation using npm-pipeline
 //
 var compStat = module.exports = function (options, callback) {
-  //
-  // Limit them to 5 right now (testing).
-  //
-  options.limit = 100;
+  var results = {},
+      index   = 0,
+      iid;
 
-  var results = {};
+  //
+  // ### function onError (err, name, cur, next)
+  // Makes `name` as errored, logs the `err`
+  // and moves on to `next` silently.
+  //
+  function onError(err, name, cur, next) {
+    console.error('error    | %d | %s %s', cur, name, err.message)
+
+    //
+    // TODO: When we better understand our errors stop ignoring
+    // all of them.
+    //
+    // return err.code !== 'ENOENT' && err.code !== 'EACCES'
+    //   ? next(err)
+    //   : next();
+
+
+    //
+    // This is easily distinguishable from
+    //
+    //     { calls: { /* etc, etc ... */ } }
+    //
+    results[name] = { error: err };
+    next();
+  }
 
   //
   // ### function pipelineOne (name, next)
@@ -33,20 +56,19 @@ var compStat = module.exports = function (options, callback) {
   // adds the result set to `results`.
   //
   function pipelineOne(name, next) {
-    console.log('pipeline | %s', name)
+    var current = ++index;
+
+    console.log('pipeline | %d | %s', current, name)
     pipeline(name, function (err, files) {
       if (err) {
-        console.error('error    | %s %s', name, err.message)
-        return err.code !== 'ENOENT' && err.code !== 'EACCES'
-          ? next(err)
-          : next();
+        return onError(err, name, current, next);
       }
 
-      console.log('analyze  | %s', name)
+      console.log('analyze  | %d | %s', current, name)
       try { results[name] = pipeline.analyze(files, options.package); }
-      catch (ex) { return next(ex); }
+      catch (ex) { return onError(ex, name, current, next); }
 
-      console.log('results  | %s %j', name, results[name]);
+      console.log('results  | %d | %s %j', current, name, results[name]);
       next();
     });
   }
@@ -71,9 +93,15 @@ var compStat = module.exports = function (options, callback) {
     // is a very compute heavy problem.
     //
     function analyze(list, done) {
-      async.forEachLimit(list, 3, pipelineOne, done);
+      console.log('Analyzing %d modules', list.length);
+      iid = setInterval(function () {
+        console.log('remain   | %d | %d', index, list.length - index);
+      }, 5000);
+
+      async.forEachLimit(list, 5, pipelineOne, done);
     }
   ], function (err) {
+    clearInterval(iid);
     if (err) { return callback(err) }
     callback(null, results);
   });

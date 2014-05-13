@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-var argv = require('optimist').argv,
+var fs = require('fs'),
+    argv = require('optimist').argv,
     compStat = require('../index');
 
 if (argv.h || argv.help) {
@@ -11,9 +12,15 @@ compStat({
   package: argv.p,
   registry: argv.r,
 }, function (err, res) {
-  console.dir(err);
   if (err) {
-    console.dir(err.stack.split('\n'));
+    console.dir(err);
+    if (err.stack) {
+      console.dir(err.stack.split('\n'));
+    }
+
+    return process.exit(1);
   }
+
+  fs.writeFileSync(argv.p + '.json', JSON.stringify(res, null, 2), 'utf8');
   console.dir(res);
 })
