@@ -5,12 +5,11 @@ var fs = require('fs'),
     compStat = require('../index');
 
 if (argv.h || argv.help) {
-  console.log('usage: comp-stat -r [registry] -p [package]');
+  console.log('usage: stat-summary -p [package]');
 }
 
 compStat.summary({
-  package: argv.p,
-  registry: argv.r,
+  data: require('../' + argv.p + '.json')
 }, function (err, res) {
   if (err) {
     console.dir(err);
@@ -21,6 +20,5 @@ compStat.summary({
     return process.exit(1);
   }
 
-  fs.writeFileSync(argv.p + '.json', JSON.stringify(res, null, 2), 'utf8');
   console.dir(res);
 })

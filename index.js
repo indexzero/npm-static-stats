@@ -36,10 +36,9 @@ var compStat = module.exports = function (options, callback) {
     // TODO: When we better understand our errors stop ignoring
     // all of them.
     //
-    // return err.code !== 'ENOENT' && err.code !== 'EACCES'
-    //   ? next(err)
-    //   : next();
-
+    if (err) {
+      console.log(err.stack);
+    }
 
     //
     // This is easily distinguishable from
@@ -104,5 +103,86 @@ var compStat = module.exports = function (options, callback) {
     clearInterval(iid);
     if (err) { return callback(err) }
     callback(null, results);
+  });
+};
+
+//
+// ### function summary (options, callback)
+// #### @options {Object} Options for this calculation run
+// ####   - package {string}   Name of the package to calculate against
+// ####   - registry {string}   Registry to calculate against
+// ####   - limit   {number}   **Optional** Limits run to first N dependencies
+// ####   - skip    {number}   **Optional** Skip frist M dependencies in run
+// ####   - filter  {function} **Optional** Limits run to those conforming to a predicate
+// Does the core parts of the compStat calculation using npm-pipeline AND reduces
+// the resultant objects in a way that is meaningful:
+//   - Total sum
+//   - Weighted sum
+//
+compStat.summary = function (options, callback) {
+  var data = options.data;
+
+  //
+  // ### function calculate()
+  //
+  function calculate() {
+    var sums = {
+      absolute: {},
+      weighted: {},
+    };
+
+    //
+    // ### function addAbsolute (type, obj)
+    // Adds the values of the `obj` to the specified type.
+    //
+    function addAbsolute(type, obj) {
+      sums.absolute[type] = sums.absolute[type] || {};
+      Object.keys(obj).forEach(function (key) {
+        sums.absolute[type][key] =  sums.absolute[type][key] || 0;
+        sums.absolute[type][key] += obj[key]
+      });
+    }
+
+    //
+    // ### function addWeighted (type, obj)
+    // Adds the values of the `obj` to the specified type.
+    //
+    function addWeighted(type, obj) {
+      sums.weighted[type] = sums.weighted[type] || {};
+      Object.keys(obj).forEach(function (key) {
+        sums.weighted[type][key] =  sums.weighted[type][key] || 0;
+        sums.weighted[type][key]++;
+      });
+    }
+
+    Object.keys(data)
+      .forEach(function (pkg) {
+        var types = Object.keys(data[pkg]);
+        if (types.length) {
+          types.forEach(function (type) {
+            addAbsolute(type, data[pkg][type]);
+            addWeighted(type, data[pkg][type]);
+          });
+        }
+      });
+
+    callback(null, sums);
+  }
+
+  //
+  // If we have data then calculate our summary
+  // now
+  //
+  if (data) {
+    return calculate();
+  }
+
+  compStat(options, function (err, results) {
+    if (err) {
+      return callback(err);
+    }
+
+    data = results;
+    calculate();
   });
 };
