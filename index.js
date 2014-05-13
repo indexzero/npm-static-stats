@@ -124,11 +124,13 @@ compStat.summary = function (options, callback) {
 
   //
   // ### function calculate()
+  // Does the core calculation work
   //
   function calculate() {
     var sums = {
       absolute: {},
       weighted: {},
+      total:    0
     };
 
     //
@@ -136,8 +138,9 @@ compStat.summary = function (options, callback) {
     // Adds the values of the `obj` to the specified type.
     //
     function addAbsolute(type, obj) {
+      var keys = Object.keys(obj);
       sums.absolute[type] = sums.absolute[type] || {};
-      Object.keys(obj).forEach(function (key) {
+      keys.forEach(function (key) {
         sums.absolute[type][key] =  sums.absolute[type][key] || 0;
         sums.absolute[type][key] += obj[key]
       });
@@ -148,8 +151,13 @@ compStat.summary = function (options, callback) {
     // Adds the values of the `obj` to the specified type.
     //
     function addWeighted(type, obj) {
+      var keys = Object.keys(obj);
+      if (keys.length) {
+        sums.total++;
+      }
+
       sums.weighted[type] = sums.weighted[type] || {};
-      Object.keys(obj).forEach(function (key) {
+      keys.forEach(function (key) {
         sums.weighted[type][key] = sums.weighted[type][key] || 0;
         sums.weighted[type][key]++;
       });
