@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+FILE=$1
+
+if [ -z "$REGISTRY" ]; then
+  echo "REGISTRY environment variable must be set!"
+  exit 1
+fi
+
+echo "Warming comp-stats caches for all modules in '$FILE'"
+for LINE in $(cat $FILE) ; do
+  echo "bin/comp-stat -r $REGISTRY -p \"$LINE\""
+  bin/comp-stat -r $REGISTRY -p "$LINE"
+done
