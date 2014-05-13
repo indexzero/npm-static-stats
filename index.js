@@ -150,7 +150,7 @@ compStat.summary = function (options, callback) {
     function addWeighted(type, obj) {
       sums.weighted[type] = sums.weighted[type] || {};
       Object.keys(obj).forEach(function (key) {
-        sums.weighted[type][key] =  sums.weighted[type][key] || 0;
+        sums.weighted[type][key] = sums.weighted[type][key] || 0;
         sums.weighted[type][key]++;
       });
     }

@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
 var fs = require('fs'),
+    path = require('path'),
     argv = require('optimist').argv,
     compStat = require('../index');
 
 if (argv.h || argv.help) {
-  console.log('usage: stat-summary -p [package]');
+  console.log('usage: stat-summary -f [file]');
 }
 
 compStat.summary({
-  data: require('../' + argv.p + '.json')
+  data: require(path.resolve(argv.f || argv.file))
 }, function (err, res) {
   if (err) {
     console.dir(err);
