@@ -1,7 +1,7 @@
 {
   "name": "npm-static-stats",
-  "version": "1.0.0",
   "description": "Comprehensive static analysis for dependent modules",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "dependencies": {
     "async": "~0.8.0",
