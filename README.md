@@ -1,4 +1,4 @@
-# comp-stat
+# npm-static-stats
 
 Generate comprehensive statistical static analysis graphs based on npm packages.
 
