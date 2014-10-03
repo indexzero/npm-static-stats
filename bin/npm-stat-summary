@@ -3,13 +3,13 @@
 var fs = require('fs'),
     path = require('path'),
     argv = require('optimist').argv,
-    compStat = require('../index');
+    statStat = require('../');
 
 if (argv.h || argv.help) {
   console.log('usage: stat-summary -f [file]');
 }
 
-compStat.summary({
+statStat.summary({
   data: require(path.resolve(argv.f || argv.file))
 }, function (err, res) {
   if (err) {

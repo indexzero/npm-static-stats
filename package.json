@@ -1,21 +1,24 @@
 {
-  "name": "comp-stat",
-  "version": "0.0.0",
+  "name": "npm-static-stats",
+  "version": "1.0.0",
   "description": "Comprehensive static analysis for dependent modules",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"No tests\""
-  },
+  "main": "lib/index.js",
   "dependencies": {
-    "npm-pipeline": "*",
-    "async": "^0.8.0",
-    "request": "^2.34.0",
-    "optimist": "^0.6.1"
+    "async": "~0.8.0",
+    "lodash": "~2.4.1",
+    "npm-pipeline": "~1.2.0",
+    "objs": "~0.1.0",
+    "optimist": "~0.6.1",
+    "request": "~2.34.0"
   },
+  "author": "Charlie Robbins <charlie.robbins@gmail.com>",
+  "license": "Apache 2",
   "keywords": [
     "npm",
     "static-analysis"
   ],
-  "author": "Charlie Robbins <charlie.robbins@gmail.com>",
-  "license": "Apache 2"
+  "bin": {
+    "npm-static-stats": "bin/npm-static-stats",
+    "npm-stat-summary": "bin/npm-stat-summary"
+  }
 }
