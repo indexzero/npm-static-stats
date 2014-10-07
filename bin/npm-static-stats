@@ -23,7 +23,7 @@ statStat.summary({
   }
 
   fs.writeFileSync(
-    path.join(__dirname, '..', '..', 'www', 'public', 'json', 'comp-stat', argv.p + '.json'),
+    path.join(process.cwd(), argv.p + '.json'),
     JSON.stringify(res, null, 2),
     'utf8'
   );
