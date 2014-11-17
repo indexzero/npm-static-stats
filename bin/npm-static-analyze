@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+var path = require('path'),
+    pipeline = require('npm-pipeline'),
+    argv    = require('yargs').argv;
+
+//
+// ### function analyzeModuleMap (name, next)
+// Pipelines the module with `name` and then
+// respond with the results to be reduced.
+//
+function analyzeModuleMap(name, next) {
+  pipeline(name, function (err, files) {
+    if (err) { return next(err); }
+
+    var results;
+    try { results = require(path.resolve(argv.work))(files, argv); }
+    catch (ex) { return next(ex); }
+
+    next(null, results);
+  });
+}
+
+analyzeModuleMap(argv.module, function (err, res) {
+  if (err) { return console.error(err); }
+  process.stdout.write(JSON.stringify(res));
+});
